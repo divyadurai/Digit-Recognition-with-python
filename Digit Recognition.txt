@@ -1,0 +1,47 @@
+import numpy as np
+import pandas as pd
+import os
+os.chdir('D:\\PYTHON\\Digit Recognition')
+#Import the file
+train=pd.read_csv('train.csv')
+test=pd.read_csv('test.csv')
+train_missing= train.isna().sum()
+
+# Set X & Y
+Y=train['label']
+X=train.iloc[:,1:785]
+
+# splitting the X & Y data into train & test 
+
+from sklearn.model_selection import train_test_split
+X_train,X_test, y_train,y_test = train_test_split(X,Y, test_size=0.2, random_state=42)
+
+#### scaler
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+## multi layer perceptron for classification
+## Implement a neurl network
+
+from sklearn.neural_network import MLPClassifier
+MLP = MLPClassifier(hidden_layer_sizes=(50,50,50), solver='adam',verbose= True, max_iter=300)
+
+MLP.fit(X_train, y_train)
+
+Y_preds_train_mlp = MLP.predict(X_train)
+Y_preds_test_mlp = MLP.predict(X_test)
+
+from sklearn.metrics import confusion_matrix
+cm_train_mpl= confusion_matrix(Y_preds_train_mlp,y_train)
+cm_test_mpl= confusion_matrix(Y_preds_test_mlp,y_test)
+
+## implementing on test data
+test_scale = scaler.transform(test)
+
+preds_test= MLP.predict(test_scale)
+preds_test=pd.DataFrame(preds_test)
+preds_test.to_csv('output.csv')
